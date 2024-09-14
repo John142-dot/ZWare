@@ -1,0 +1,84 @@
+local Funny = {}
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+function Funny:CreateNotification(title)
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0.3, 0, 0.2, 0)
+    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.BackgroundTransparency = 0.1
+    mainFrame.Parent = screenGui
+
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, 20)
+    uiCorner.Parent = mainFrame
+
+    local shadowFrame = Instance.new("Frame")
+    shadowFrame.Size = UDim2.new(1, 10, 1, 10)
+    shadowFrame.Position = UDim2.new(0, -5, 0, -5)
+    shadowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    shadowFrame.BackgroundTransparency = 0.5
+    shadowFrame.ZIndex = 0
+    shadowFrame.Parent = mainFrame
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0, 40)
+    titleLabel.Position = UDim2.new(0, 0, 0, 0)
+    titleLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+    titleLabel.TextScaled = true
+    titleLabel.Parent = mainFrame
+
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Position = UDim2.new(1, -40, 0, 10)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.TextScaled = true
+    closeButton.Parent = mainFrame
+
+    local dragging
+    local dragStart
+    local startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    mainFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = UserInputService:GetMouseLocation() - mainFrame.Position.Position
+            startPos = mainFrame.Position
+
+            UserInputService.InputChanged:Connect(function(input)
+                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                    update(input)
+                end
+            end)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+
+    closeButton.MouseButton1Click:Connect(function()
+        local tween = TweenService:Create(mainFrame, TweenInfo.new(0.5), {Size = UDim2.new(0, 0, 0, 0)})
+        tween:Play()
+        tween.Completed:Wait()
+        mainFrame:Destroy()
+    end)
+end
+
+return Funny
