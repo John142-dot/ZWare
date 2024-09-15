@@ -5,7 +5,7 @@ local Objects = {}
 local function randomletters(len)
     local returnedstr = ""
     for i = 1, len do
-        returnedstr = returnedstr .. string.char(math.random(65,90)).. "-" .. string.char(math.random(5, 8))
+        returnedstr = returnedstr .. string.char(math.random(65, 90)) .. "-" .. string.char(math.random(5, 8))
     end
     return returnedstr
 end
@@ -15,16 +15,16 @@ function Utilities.CreateInstance(class, properties)
     if properties.Parent then
         obj.Parent = properties.Parent
     end
-    
-    for i,v in next, properties do
+
+    for i, v in next, properties do
         obj[i] = v
     end
-    
+
     table.insert(Objects, obj)
     return obj
 end
 
-TweenService = game:GetService("TweenService")
+local TweenService = game:GetService("TweenService")
 
 local Notifications = {}
 
@@ -36,19 +36,19 @@ GUI.ResetOnSpawn = false
 function Notifications.Create(Title, Desc, Time, ImageID)
     assert(typeof(Title) == "string", "Title isn't a string!")
     assert(typeof(Time) == "number", "Time isn't a number!")
-    
+
     local Frame = Utilities.CreateInstance("Frame", {
         BackgroundColor3 = Color3.fromRGB(128, 128, 128),  -- Gray background
         BorderSizePixel = 0,
         Name = randomletters(10),
         Parent = GUI,
-        AnchorPoint = Vector2.new(1,1),
+        AnchorPoint = Vector2.new(1, 1),
         Position = UDim2.new(1.27, 0, 1, 0),
         Size = UDim2.new(0, 400, 0, 120),
         ZIndex = 1,
         Visible = true
     })
-    
+
     Frame:TweenPosition(UDim2.new(1, 0, 1, 0), "In", "Quad", 1)
 
     local Image = Utilities.CreateInstance("ImageLabel", {
@@ -89,14 +89,14 @@ function Notifications.Create(Title, Desc, Time, ImageID)
     })
 
     task.wait(0.8)
-    for _,v in next, Frame:GetDescendants() do
+    for _, v in next, Frame:GetDescendants() do
         if v:IsA("TextLabel") then
             TweenService:Create(v, TweenInfo.new(0.8), {TextTransparency = 0}):Play()
         end
     end
 
     task.wait(1.5)
-    for _,v in next, Frame:GetDescendants() do
+    for _, v in next, Frame:GetDescendants() do
         if v:IsA("TextLabel") then
             TweenService:Create(v, TweenInfo.new(1.5), {TextTransparency = 1}):Play()
         end
