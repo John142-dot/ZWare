@@ -1,84 +1,113 @@
-local Funny = {}
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
+local Utilities = {}
 
-function Funny:CreateNotification(title)
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local Objects = {}
 
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0.3, 0, 0.2, 0)
-    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    mainFrame.BorderSizePixel = 0
-    mainFrame.BackgroundTransparency = 0.1
-    mainFrame.Parent = screenGui
-
-    local uiCorner = Instance.new("UICorner")
-    uiCorner.CornerRadius = UDim.new(0, 20)
-    uiCorner.Parent = mainFrame
-
-    local shadowFrame = Instance.new("Frame")
-    shadowFrame.Size = UDim2.new(1, 10, 1, 10)
-    shadowFrame.Position = UDim2.new(0, -5, 0, -5)
-    shadowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    shadowFrame.BackgroundTransparency = 0.5
-    shadowFrame.ZIndex = 0
-    shadowFrame.Parent = mainFrame
-
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, 0, 0, 40)
-    titleLabel.Position = UDim2.new(0, 0, 0, 0)
-    titleLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    titleLabel.Text = title
-    titleLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
-    titleLabel.TextScaled = true
-    titleLabel.Parent = mainFrame
-
-    local closeButton = Instance.new("TextButton")
-    closeButton.Size = UDim2.new(0, 30, 0, 30)
-    closeButton.Position = UDim2.new(1, -40, 0, 10)
-    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    closeButton.Text = "X"
-    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeButton.TextScaled = true
-    closeButton.Parent = mainFrame
-
-    local dragging
-    local dragStart
-    local startPos
-
-    local function update(input)
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+local function randomletters(len)
+    local returnedstr = ""
+    for i = 1, len do
+        returnedstr = returnedstr .. string.char(math.random(65,90)).. "-" .. string.char(math.random(5, 8))
     end
-
-    mainFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = UserInputService:GetMouseLocation() - mainFrame.Position.Position
-            startPos = mainFrame.Position
-
-            UserInputService.InputChanged:Connect(function(input)
-                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                    update(input)
-                end
-            end)
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-
-    closeButton.MouseButton1Click:Connect(function()
-        local tween = TweenService:Create(mainFrame, TweenInfo.new(0.5), {Size = UDim2.new(0, 0, 0, 0)})
-        tween:Play()
-        tween.Completed:Wait()
-        mainFrame:Destroy()
-    end)
+    return returnedstr
 end
 
-return Funny
+function Utilities.CreateInstance(class, properties)
+    local obj = Instance.new(class)
+    if properties.Parent then
+        obj.Parent = properties.Parent
+    end
+    
+    for i,v in next, properties do
+        obj[i] = v
+    end
+    
+    table.insert(Objects, obj)
+    return obj
+end
+
+TweenService = game:GetService("TweenService")
+
+local Notifications = {}
+
+local GUI = Instance.new("ScreenGui", game.CoreGui)
+
+GUI.Name = randomletters(10)
+GUI.ResetOnSpawn = false
+
+function Notifications.Create(Title, Desc, Time, ImageID)
+    assert(typeof(Title) == "string", "Title isn't a string!")
+    assert(typeof(Time) == "number", "Time isn't a number!")
+    
+    local Frame = Utilities.CreateInstance("Frame", {
+        BackgroundColor3 = Color3.fromRGB(128, 128, 128),  -- Gray background
+        BorderSizePixel = 0,
+        Name = randomletters(10),
+        Parent = GUI,
+        AnchorPoint = Vector2.new(1,1),
+        Position = UDim2.new(1.27, 0, 1, 0),
+        Size = UDim2.new(0, 400, 0, 120),
+        ZIndex = 1,
+        Visible = true
+    })
+    
+    Frame:TweenPosition(UDim2.new(1, 0, 1, 0), "In", "Quad", 1)
+
+    local Image = Utilities.CreateInstance("ImageLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 70, 0, 70),
+        Position = UDim2.new(0.02, 0, 0.15, 0),
+        Parent = Frame,
+        Image = "rbxassetid://" .. ImageID,
+        ScaleType = Enum.ScaleType.Fit
+    })
+
+    local TitleLabel = Utilities.CreateInstance("TextLabel", {
+        BackgroundTransparency = 1,
+        Name = "TitleLabel",
+        Parent = Frame,
+        Position = UDim2.new(0.1, 0, 0.1, 0),
+        Size = UDim2.new(0.8, 0, 0.2, 0),
+        TextTransparency = 1,
+        Font = Enum.Font.Gotham,
+        Text = Title,
+        TextColor3 = Color3.fromRGB(240, 240, 240),  -- Title color
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    local Description = Utilities.CreateInstance("TextLabel", {
+        BackgroundTransparency = 1,
+        Name = "Desc",
+        Parent = Frame,
+        Position = UDim2.new(0.1, 0, 0.35, 0),
+        Size = UDim2.new(0.8, 0, 0.5, 0),
+        TextTransparency = 1,
+        Font = Enum.Font.Gotham,
+        Text = tostring(Desc),
+        TextColor3 = Color3.fromRGB(213, 213, 213),
+        TextSize = 14,
+        TextWrapped = true
+    })
+
+    task.wait(0.8)
+    for _,v in next, Frame:GetDescendants() do
+        if v:IsA("TextLabel") then
+            TweenService:Create(v, TweenInfo.new(0.8), {TextTransparency = 0}):Play()
+        end
+    end
+
+    task.wait(1.5)
+    for _,v in next, Frame:GetDescendants() do
+        if v:IsA("TextLabel") then
+            TweenService:Create(v, TweenInfo.new(1.5), {TextTransparency = 1}):Play()
+        end
+    end
+
+    task.wait(Time - 0.5)
+    Frame:TweenPosition(UDim2.new(1.27, 0, 1, 0), "In", "Quad", 1)
+end
+
+function Notifications.Clear()
+    GUI:Destroy()
+end
+
+return Notifications
